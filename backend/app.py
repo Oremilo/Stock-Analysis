@@ -22,7 +22,7 @@ def create_app():
     CORS(app, resources={
         r"/auth/*": {"origins": "*"},
         r"/stocks/*": {"origins": "*"},
-        r"/api/market/*": {"origins": "*"}
+        r"/api/market/*": {"origins": " *"}
     })
 
     # Configure app settings

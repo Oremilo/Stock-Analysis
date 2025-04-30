@@ -238,11 +238,11 @@ def fetch_risk_results(new_stock_ticker, portfolio):
         logging.error(f"Error in fetch_risk_results: {str(e)}")
         return {'error': str(e)}
 
-if __name__ == "__main__":
-    # Portfolio of stocks
-    portfolio = ['TCS.NS', 'ITC.NS', 'ZOMATO.NS', 'TATASTEEL.NS', 'INFY.NS', 
-                'RELIANCE.NS', 'HDFCBANK.NS', 'ICICIBANK.NS', 'SBIN.NS']
+# if __name__ == "__main__":
+#     # Portfolio of stocks
+#     portfolio = ['TCS.NS', 'ITC.NS', 'ZOMATO.NS', 'TATASTEEL.NS', 'INFY.NS', 
+#                 'RELIANCE.NS', 'HDFCBANK.NS', 'ICICIBANK.NS', 'SBIN.NS']
 
-    new_stock_ticker = 'TCS.NS'
-    results = fetch_risk_results(new_stock_ticker, portfolio)
-    print(results)
+#     new_stock_ticker = 'TCS.NS'
+#     results = fetch_risk_results(new_stock_ticker, portfolio)
+#     print(results)

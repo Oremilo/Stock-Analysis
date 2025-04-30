@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, TrendingUp, ArrowUp, ArrowDown } from "lucide-react";
+import { Search, TrendingUp, ArrowUp, ArrowDown, Loader } from "lucide-react";
 import { Toaster, toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -22,6 +22,7 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const [searchPerformed, setSearchPerformed] = useState(false);
+  const [marketsLoading, setMarketsLoading] = useState(true);
   const [marketData, setMarketData] = useState({
     nifty50: { historical: [], current: {} },
     sensex: { historical: [], current: {} },
@@ -57,6 +58,7 @@ const Home = () => {
 
   useEffect(() => {
     const fetchMarketData = async () => {
+      setMarketsLoading(true);
       try {
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/market/market-overview`);
         if (!response.ok) {
@@ -71,6 +73,9 @@ const Home = () => {
       } catch (error) {
         console.error("Error fetching market data:", error);
         toast.error("Unable to fetch market data");
+      } finally {
+        // Add a small delay to ensure the loading animation is visible
+        setTimeout(() => setMarketsLoading(false), 800);
       }
     };
 
@@ -140,6 +145,33 @@ const Home = () => {
     }
     return null;
   };
+
+  // Card Loading Overlay Component
+  const CardLoadingOverlay = ({ color }) => (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="absolute inset-0 bg-gray-900/70 backdrop-blur-sm flex items-center justify-center rounded-3xl z-10"
+    >
+      <div className="text-center">
+        <motion.div
+          animate={{ 
+            rotate: 360,
+            scale: [1, 1.1, 1]
+          }}
+          transition={{ 
+            rotate: { duration: 1.5, repeat: Infinity, ease: "linear" },
+            scale: { duration: 1, repeat: Infinity, ease: "easeInOut" }
+          }}
+          className="mb-4 mx-auto"
+        >
+          <Loader size={40} className={`text-${color}-500`} />
+        </motion.div>
+        <p className="text-gray-300 text-sm">Loading market data...</p>
+      </div>
+    </motion.div>
+  );
 
   return (
     <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white min-h-screen overflow-hidden">
@@ -236,8 +268,11 @@ const Home = () => {
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.7 }}
-                className="bg-gray-800/40 backdrop-blur-lg rounded-3xl p-6 shadow-2xl"
+                className="bg-gray-800/40 backdrop-blur-lg rounded-3xl p-6 shadow-2xl relative"
               >
+                <AnimatePresence>
+                  {marketsLoading && <CardLoadingOverlay color="green" />}
+                </AnimatePresence>
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-2xl font-bold">Nifty 50</h2>
                   <div className={`flex items-center ${marketData.nifty50.current.changePercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
@@ -275,8 +310,11 @@ const Home = () => {
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.9 }}
-                className="bg-gray-800/40 backdrop-blur-lg rounded-3xl p-6 shadow-2xl"
+                className="bg-gray-800/40 backdrop-blur-lg rounded-3xl p-6 shadow-2xl relative"
               >
+                <AnimatePresence>
+                  {marketsLoading && <CardLoadingOverlay color="blue" />}
+                </AnimatePresence>
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-2xl font-bold">Sensex</h2>
                   <div className={`flex items-center ${marketData.sensex.current.changePercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
