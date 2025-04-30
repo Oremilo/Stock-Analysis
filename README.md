@@ -4,7 +4,7 @@
 This project leverages AI and advanced analytical techniques to enhance stock trading strategies for Indian stocks listed on NSE and BSE. It combines sentiment analysis, price prediction, technical indicators, and chatbot recommendations to enable informed intraday and swing trading decisions.
 
 ![pic1](assets/pic1.png)
-Homepage
+# Homepage
 A sleek, responsive dashboard displaying real-time market indices (Nifty 50 and Sensex) with visual trend graphs and percentage changes, complemented by an intuitive search bar for effortless stock discovery.
 ![pic2](assets/pic2.png)
 Search Functionality
