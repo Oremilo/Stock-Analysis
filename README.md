@@ -3,31 +3,27 @@
 ## Project Overview
 This project leverages AI and advanced analytical techniques to enhance stock trading strategies for Indian stocks listed on NSE and BSE. It combines sentiment analysis, price prediction, technical indicators, and chatbot recommendations to enable informed intraday and swing trading decisions.
 
-# Homepage
+# Homepage displaying real-time market indices of Nifty 50 and Sensex
 ![pic1](assets/pic1.png)
 A sleek, responsive dashboard displaying real-time market indices (Nifty 50 and Sensex) with visual trend graphs and percentage changes, complemented by an intuitive search bar for effortless stock discovery.
 
-# Search Functionality
+# Search Functionality displaying stocks maching the symbols
 ![pic2](assets/pic2.png)
 Advanced search system delivering instant results across multiple markets, displaying relevant stock symbols with their associated companies and providing seamless navigation to detailed analysis pages.
 
-# Stock Detail View
+# Stock Detail View, showing market sentiment and price prediction
 ![pic3](assets/pic3.png)
 Comprehensive stock overview presenting current price, percentage change, and market sentiment analysis with numerical scoring, enhanced by visual indicators for at-a-glance performance assessment.
 
-# Price History Analysis
+# Price History Analysis with charts
 ![pic4](assets/pic4.png)
 Interactive historical price charting spanning multiple months with precision data points, enabling users to track stock performance over time with specific date and price information on hover.
 
-# Company Information
+# Company Information and Company latest news
 ![pic5](assets/pic5.png)
 Detailed company profiles featuring industry classification, sector categorization, country of operation, and official website links for thorough fundamental analysis and research.
 
-# News Integration
-![pic6](assets/pic6.png)
-Curated company-specific news feed with sentiment analysis, publication details, and relevance indicators to keep investors informed of market-moving developments and media coverage.
-
-# Risk Assessment
+# Risk Assessment analysis
 ![pic7](assets/pic7.png)
 Sophisticated risk analysis framework providing volatility metrics, return calculations, market trend indicators, and overall risk level determination for informed investment decision-making.
 
