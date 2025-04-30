@@ -24,7 +24,7 @@ const PricePredictionCard = ({ prediction }) => {
         
         // Set timer to show overlay again after 4 seconds of data viewing
         dataTimerRef.current = setTimeout(showOverlay, 3000);
-      }, 8000);
+      }, 6000);
     };
     
     // Start the cycle
