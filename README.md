@@ -101,8 +101,8 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Contact
 For queries or feedback, please reach out:
 - **Email**: harsh20y@gmail.com
-- **LinkedIn**: [Harshith Bezawada](https://www.linkedin.com/in/harshith-bezawada-3a775328a/)
-- **GitHub**: [Harshith Bezawada](https://github.com/Harshith20B)
+- **LinkedIn**: [harshith-bezawada](https://www.linkedin.com/in/harshith-bezawada-3a775328a/)
+- **GitHub**: [Harshith20B](https://github.com/Harshith20B)
 
 ---
 **Happy Trading!** 📈
