@@ -1,9 +1,35 @@
-# Enigma_24 Hack
-
 # AI-Based Stock Trading for Indian Markets
 
 ## Project Overview
 This project leverages AI and advanced analytical techniques to enhance stock trading strategies for Indian stocks listed on NSE and BSE. It combines sentiment analysis, price prediction, technical indicators, and chatbot recommendations to enable informed intraday and swing trading decisions.
+
+![pic1](assets/pic1.png)
+Homepage
+A sleek, responsive dashboard displaying real-time market indices (Nifty 50 and Sensex) with visual trend graphs and percentage changes, complemented by an intuitive search bar for effortless stock discovery.
+![pic2](assets/pic2.png)
+Search Functionality
+Advanced search system delivering instant results across multiple markets, displaying relevant stock symbols with their associated companies and providing seamless navigation to detailed analysis pages.
+
+![pic3](assets/pic3.png)
+Stock Detail View
+Comprehensive stock overview presenting current price, percentage change, and market sentiment analysis with numerical scoring, enhanced by visual indicators for at-a-glance performance assessment.
+
+![pic4](assets/pic4.png)
+Price History Analysis
+Interactive historical price charting spanning multiple months with precision data points, enabling users to track stock performance over time with specific date and price information on hover.
+
+![pic5](assets/pic5.png)
+Company Information
+Detailed company profiles featuring industry classification, sector categorization, country of operation, and official website links for thorough fundamental analysis and research.
+
+![pic6](assets/pic6.png)
+News Integration
+Curated company-specific news feed with sentiment analysis, publication details, and relevance indicators to keep investors informed of market-moving developments and media coverage.
+
+![pic7](assets/pic7.png)
+Risk Assessment
+Sophisticated risk analysis framework providing volatility metrics, return calculations, market trend indicators, and overall risk level determination for informed investment decision-making.
+
 
 ## Features
 
