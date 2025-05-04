@@ -4,7 +4,7 @@ python-dotenv>=1.0.1
 requests>=2.31.0
 yfinance>=0.2.37
 pandas>=2.2.2
-numpy>=1.26.4
+numpy==1.24.4  # ⬅️ Downgraded to avoid the NaN import issue
 tensorflow>=2.15.0
 scikit-learn>=1.4.2
 joblib>=1.4.0
