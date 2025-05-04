@@ -1,5 +1,3 @@
-# Enigma_24 Hack
-
 # AI-Based Stock Trading for Indian Markets
 
 ## Project Overview
@@ -23,10 +21,35 @@ This project leverages AI and advanced analytical techniques to enhance stock tr
 ### Recommendation Justification
 - **RAG-Based Chatbot**: Implements a Retrieval-Augmented Generation chatbot to provide recommendation justifications and trading summaries, ensuring transparency and confidence in decisions.
 
+# Real-Time Market Indices Overview: Nifty 50 & Sensex
+![pic1](assets/pic1.png)
+A sleek, responsive dashboard displaying real-time market indices (Nifty 50 and Sensex) with visual trend graphs and percentage changes, complemented by an intuitive search bar for effortless stock discovery.
+
+# Advanced Stock Search Functionality
+![pic2](assets/pic2.png)
+Advanced search system delivering instant results across multiple markets, displaying relevant stock symbols with their associated companies and providing seamless navigation to detailed analysis pages.
+
+# In-Depth Stock Detail View: Market Sentiment & Price Prediction
+![pic3](assets/pic3.png)
+Comprehensive stock overview presenting current price, percentage change, and market sentiment analysis with numerical scoring, enhanced by visual indicators for at-a-glance performance assessment.
+
+# Interactive Price History Analysis with Detailed Charts
+![pic4](assets/pic4.png)
+Interactive historical price charting spanning multiple months with precision data points, enabling users to track stock performance over time with specific date and price information on hover.
+
+# Company Profiles and Latest News Feed
+![pic5](assets/pic5.png)
+Detailed company profiles featuring industry classification, sector categorization, country of operation, and official website links for thorough fundamental analysis and research.
+
+# Comprehensive Risk Assessment Analysis
+![pic7](assets/pic7.png)
+Sophisticated risk analysis framework providing volatility metrics, return calculations, market trend indicators, and overall risk level determination for informed investment decision-making.
+
+
 ## Installation
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/ShamanthHiremath/Enigma_24.git
+   https://github.com/Harshith20B/Stock_Analysis
    ```
 2. **Navigate to the Project Directory**:
    ```bash
@@ -51,6 +74,9 @@ This project leverages AI and advanced analytical techniques to enhance stock tr
    Access generated tickers and sentiment scores from the dashboard.
 
 ## Technologies Used
+- **Frontend**: React, Tailwind CSS
+- **Backend**: Node.js, Express.js, MongoDB
+- **Email Integration**: Nodemailer
 - **Machine Learning**: Random Forest, LSTM
 - **Natural Language Processing**: Sentiment Analysis
 - **Technical Indicators**: RSI, MACD, Bollinger Bands, EMA, etc.
@@ -74,9 +100,9 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contact
 For queries or feedback, please reach out:
-- **Email**: your-email@example.com
-- **LinkedIn**: [Shamanth M Hiremath](https://linkedin.com/in/shamanthmhiremath)
-- **GitHub**: [Shamanth Hiremath](https://github.com/ShamanthHiremath)
+- **Email**: harsh20y@gmail.com
+- **LinkedIn**: [harshith-bezawada](https://www.linkedin.com/in/harshith-bezawada-3a775328a/)
+- **GitHub**: [Harshith20B](https://github.com/Harshith20B)
 
 ---
 **Happy Trading!** 📈
