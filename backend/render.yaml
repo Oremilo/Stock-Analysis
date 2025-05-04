@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: flask-backend
+    env: python
+    buildCommand: cd backend && pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    workingDir: backend
+    region: oregon
+    branch: main
+    autoDeploy: true
