@@ -12,3 +12,4 @@ vaderSentiment>=3.3.2
 textblob>=0.17.1
 praw>=7.7.1
 pandas-ta>=0.3.14b0
+gunicorn
