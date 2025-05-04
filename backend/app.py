@@ -2,13 +2,11 @@ import os
 from flask import Flask
 from flask_cors import CORS
 from dotenv import load_dotenv
-#.\.venv\Scripts\activate
+
 from routes.auth_routes import auth_bp
 from routes.stock_routes import stock_bp
 from routes.market_routes import market_bp
-# In your app.py or similar
 from routes.stock_routes import risk_bp
-# Import database connection
 from utils.db import connect_db
 
 # Load environment variables
@@ -18,11 +16,11 @@ def create_app():
     # Initialize Flask app
     app = Flask(__name__)
 
-    # Enable CORS with more specific configuration
+    # Enable CORS with correct frontend origin
     CORS(app, resources={
-        r"/auth/*": {"origins": "*"},
-        r"/stocks/*": {"origins": "*"},
-        r"/api/market/*": {"origins": " *"}
+        r"/auth/*": {"origins": "https://stock-analysis-a9fl0xcok-harshith-bs-projects.vercel.app"},
+        r"/stocks/*": {"origins": "https://stock-analysis-a9fl0xcok-harshith-bs-projects.vercel.app"},
+        r"/api/market/*": {"origins": "https://stock-analysis-a9fl0xcok-harshith-bs-projects.vercel.app"}
     })
 
     # Configure app settings
@@ -43,6 +41,7 @@ def create_app():
     app.register_blueprint(stock_bp, url_prefix="/stocks")
     app.register_blueprint(market_bp, url_prefix='/api/market')
     app.register_blueprint(risk_bp, url_prefix='/risk')
+
     return app
 
 # Application factory pattern
