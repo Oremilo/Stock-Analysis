@@ -156,7 +156,8 @@ def stock_price_predictor(symbol, start_date, end_date):
         logging.error(f"Price prediction error for {symbol}: {str(e)}")
         return {'error': f"Failed to predict price: {str(e)}"}
 # Financial Modeling Prep API Configuration
-FMP_API_KEY = 'GbXRY0QJF2ZAzqNqFo9G9tmInkDmNMz9'
+#FMP_API_KEY = 'GbXRY0QJF2ZAzqNqFo9G9tmInkDmNMz9'
+FMP_API_KEY = 'vfc3EFQTeT28LMdtSsGnz73OGXf3IEEP'
 #FMP_API_KEY = 'cRDdT2E7PbKeYPsVST8kmnUBJwof2sTa'
 BASE_URL = 'https://financialmodelingprep.com/api'
 
