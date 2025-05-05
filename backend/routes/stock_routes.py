@@ -3,11 +3,16 @@ import logging
 import numpy as np
 import requests
 import yfinance as yf
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 from datetime import datetime, timedelta
 from .sentiment_analysis import fetch_and_analyze_stock_sentiment
 from .risk_analysis import fetch_risk_results
 from .prediction_analysis import stock_price_predictor, train_or_load_model
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, 
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 stock_bp = Blueprint('stock', __name__)
 risk_bp = Blueprint('risk', __name__)
@@ -15,12 +20,19 @@ portfolio = ['TCS.NS', 'ITC.NS', 'ZOMATO.NS', 'TATASTEEL.NS', 'INFY.NS',
             'RELIANCE.NS', 'HDFCBANK.NS', 'ICICIBANK.NS', 'SBIN.NS']
 
 # Financial Modeling Prep API Configuration
-# Use environment variable instead of hardcoding
-FMP_API_KEY = os.getenv('FMP_API_KEY', 'cRDdT2E7PbKeYPsVST8kmnUBJwof2sTa')
+FMP_API_KEY = os.getenv('FMP_API_KEY', '')
 BASE_URL = 'https://financialmodelingprep.com/api'
 
 def search_stocks(query):
     try:
+        # Log that we're starting the search
+        logger.info(f"Searching for stocks matching: {query}")
+        
+        # Check if API key is available
+        if not FMP_API_KEY:
+            logger.error("FMP_API_KEY is not set or empty")
+            return {"error": "API key not configured"}
+            
         search_url = f"{BASE_URL}/v3/search-ticker"
         params = {
             'query': query,
@@ -28,24 +40,36 @@ def search_stocks(query):
             'apikey': FMP_API_KEY
         }
         
-        response = requests.get(search_url, params=params)
+        # Log the URL we're requesting (without API key)
+        logger.info(f"Making request to: {search_url} with query: {query}")
         
-        # Add better error handling
+        response = requests.get(search_url, params=params, timeout=10)
+        
+        # Handle common error codes
         if response.status_code == 401:
-            logging.error("API Authentication failed: Invalid API key")
-            return {"error": "API authentication failed"}
+            logger.error("API Authentication failed: Invalid API key")
+            return {"error": "API authentication failed. Check your API key."}
+        elif response.status_code == 429:
+            logger.error("API rate limit exceeded")
+            return {"error": "API rate limit exceeded. Try again later."}
+        elif response.status_code != 200:
+            logger.error(f"API request failed with status code {response.status_code}")
+            return {"error": f"API request failed with status code {response.status_code}"}
         
-        response.raise_for_status()
         data = response.json()
+        logger.info(f"Search returned {len(data) if isinstance(data, list) else 0} results")
         
         return data if data else []
     
+    except requests.exceptions.Timeout:
+        logger.error("API request timed out")
+        return {"error": "API request timed out. Try again later."}
     except requests.exceptions.RequestException as e:
-        logging.error(f"API request error in stock search: {e}")
-        return {"error": f"API request error: {str(e)}"}
+        logger.error(f"API request error: {e}")
+        return {"error": f"API request error. Please try again."}
     except Exception as e:
-        logging.error(f"Error in stock search: {e}")
-        return {"error": f"Unexpected error: {str(e)}"}
+        logger.error(f"Unexpected error in search: {e}")
+        return {"error": f"An unexpected error occurred"}
 
 @stock_bp.route('/search', methods=['GET'])
 def search_stocks_route():
@@ -64,11 +88,13 @@ def search_stocks_route():
         return jsonify(search_results)
     
     except Exception as e:
-        logging.error(f"Unexpected error in search route: {e}")
+        logger.exception(f"Error in search route: {e}")
         return jsonify({"error": "An unexpected error occurred"}), 500
 
 def get_stock_details(symbol):
     try:
+        logger.info(f"Fetching stock details for {symbol}")
+        
         # Initialize default response structure with safe defaults
         stock_details = {
             'current_quote': {
@@ -77,11 +103,11 @@ def get_stock_details(symbol):
                 'change_percent': 0.0,
             },
             'profile': {
-                'name': 'Unknown',
+                'name': symbol,  # Use symbol as default name
                 'symbol': symbol,
-                'industry': 'Unknown',
-                'sector': 'Unknown',
-                'country': 'Unknown',
+                'industry': 'N/A',
+                'sector': 'N/A',
+                'country': 'N/A',
                 'website': '#',
             },
             'historical_prices': [],
@@ -93,17 +119,21 @@ def get_stock_details(symbol):
 
         # Fetch stock information using yfinance
         try:
+            logger.info(f"Fetching yfinance data for {symbol}")
             stock = yf.Ticker(symbol)
             
             # Company Profile from yfinance
             if hasattr(stock, 'info') and stock.info:
                 stock_details['profile'].update({
-                    'name': stock.info.get('longName', 'Unknown'),
-                    'industry': stock.info.get('industry', 'Unknown'),
-                    'sector': stock.info.get('sector', 'Unknown'),
-                    'country': stock.info.get('country', 'Unknown'),
+                    'name': stock.info.get('longName', symbol),
+                    'industry': stock.info.get('industry', 'N/A'),
+                    'sector': stock.info.get('sector', 'N/A'),
+                    'country': stock.info.get('country', 'N/A'),
                     'website': stock.info.get('website', '#'),
                 })
+                logger.info(f"Retrieved profile data for {symbol}")
+            else:
+                logger.warning(f"No info attribute or empty info for {symbol}")
 
             # Current Quote from yfinance
             current_price = stock.history(period='1d')
@@ -118,6 +148,9 @@ def get_stock_details(symbol):
                     'change': float(change),
                     'change_percent': float(change_percent)
                 }
+                logger.info(f"Retrieved current price data for {symbol}")
+            else:
+                logger.warning(f"Empty current price data for {symbol}")
 
             # Historical Prices (Last 365 days) from yfinance
             historical_data = stock.history(period='1y')
@@ -129,79 +162,137 @@ def get_stock_details(symbol):
                     }
                     for idx, row in historical_data.iterrows()
                 ]
+                logger.info(f"Retrieved historical data for {symbol}: {len(stock_details['historical_prices'])} data points")
+            else:
+                logger.warning(f"Empty historical data for {symbol}")
+                
         except Exception as e:
-            logging.error(f"YFinance error: {e}")
+            logger.error(f"YFinance error for {symbol}: {e}")
             # Continue with defaults rather than failing completely
         
         # News from Financial Modeling Prep with better error handling
         try:
-            news_url = f"{BASE_URL}/v3/stock_news"
-            news_response = requests.get(news_url, params={
-                'tickers': symbol,
-                'limit': 5,
-                'apikey': FMP_API_KEY
-            })
-            
-            if news_response.status_code == 401:
-                logging.error("FMP API Authentication failed when fetching news")
-                # Continue with empty news
+            if FMP_API_KEY:
+                logger.info(f"Fetching news for {symbol}")
+                news_url = f"{BASE_URL}/v3/stock_news"
+                params = {
+                    'tickers': symbol,
+                    'limit': 5,
+                    'apikey': FMP_API_KEY
+                }
+                
+                # Log the URL we're requesting (without API key)
+                logger.info(f"Making news request for {symbol}")
+                
+                news_response = requests.get(news_url, params=params, timeout=10)
+                
+                if news_response.status_code == 401:
+                    logger.error(f"FMP API Authentication failed when fetching news for {symbol}")
+                    # Continue with empty news
+                elif news_response.status_code != 200:
+                    logger.error(f"News API request failed with status code {news_response.status_code}")
+                else:
+                    news_data = news_response.json()
+                    if news_data and isinstance(news_data, list):
+                        stock_details['news'] = [
+                            {
+                                'title': article.get('title', ''),
+                                'publisher': article.get('site', ''),
+                                'link': article.get('url', ''),
+                                'published_at': article.get('publishedDate', '')
+                            }
+                            for article in news_data[:5]
+                        ]
+                        logger.info(f"Retrieved {len(stock_details['news'])} news items for {symbol}")
+                    else:
+                        logger.warning(f"No news data or invalid format for {symbol}")
             else:
-                news_response.raise_for_status()
-                news_data = news_response.json()
-
-                if news_data and isinstance(news_data, list):
-                    stock_details['news'] = [
-                        {
-                            'title': article.get('title', ''),
-                            'publisher': article.get('site', ''),
-                            'link': article.get('url', ''),
-                            'published_at': article.get('publishedDate', '')
-                        }
-                        for article in news_data[:5]
-                    ]
+                logger.warning("Skipping news fetch - FMP_API_KEY not set")
+        except requests.exceptions.Timeout:
+            logger.error(f"News API request timed out for {symbol}")
         except requests.exceptions.RequestException as e:
-            logging.error(f"News API request error: {e}")
-            # Continue with empty news
+            logger.error(f"News API request error for {symbol}: {e}")
         except Exception as e:
-            logging.error(f"News processing error: {e}")
-            # Continue with empty news
+            logger.error(f"News processing error for {symbol}: {e}")
 
-        # Fetch sentiment analysis 
+        # Fetch sentiment analysis - if the function exists
         try:
+            logger.info(f"Fetching sentiment for {symbol}")
             sentiment_data = fetch_and_analyze_stock_sentiment(symbol)
             
-            # Combine existing news with sentiment news if needed
-            existing_news = stock_details.get('news', [])
-            sentiment_news = sentiment_data.get('news', [])
-            
-            # Merge news, prioritizing sentiment news but keeping existing if sentiment news is empty
-            stock_details['news'] = sentiment_news if sentiment_news else existing_news
-            
-            stock_details['sentiment'] = {
-                'overall_prediction': sentiment_data.get('overall_prediction', None)
-            }
+            if sentiment_data and isinstance(sentiment_data, dict):
+                # Combine existing news with sentiment news if needed
+                existing_news = stock_details.get('news', [])
+                sentiment_news = sentiment_data.get('news', [])
+                
+                # Merge news, prioritizing sentiment news but keeping existing if sentiment news is empty
+                if sentiment_news:
+                    stock_details['news'] = sentiment_news
+                
+                stock_details['sentiment'] = {
+                    'overall_prediction': sentiment_data.get('overall_prediction', 'Neutral')
+                }
+                logger.info(f"Retrieved sentiment data for {symbol}")
+            else:
+                logger.warning(f"No sentiment data or invalid format for {symbol}")
+        except NameError:
+            logger.warning(f"Sentiment analysis function not available for {symbol}")
         except Exception as e:
-            logging.error(f"Error fetching sentiment: {e}")
-            stock_details['sentiment'] = None
+            logger.error(f"Error fetching sentiment for {symbol}: {e}")
+            stock_details['sentiment'] = {'overall_prediction': 'Neutral'}
             
         # Fetch Risk Analysis
         try:
-            # Use requests to make an internal API call
-            risk_response = requests.get(f"{request.host_url}risk/analyze/{symbol}")
-            if risk_response.ok:
-                stock_details['risk_analysis'] = risk_response.json().get('risk_analysis')
-            else:
-                logging.warning(f"Risk analysis returned status code {risk_response.status_code}")
-                stock_details['risk_analysis'] = {
-                    'risk_level': 'N/A',
-                    'volatility': 'N/A',
-                    'daily_return': 'N/A',
-                    'current_price': 'N/A',
-                    'latest_close': None,
-                    'trend': 'N/A'
-                }
+            logger.info(f"Fetching risk analysis for {symbol}")
+            
+            # Use the fetch_risk_results function directly if possible
+            try:
+                risk_results = fetch_risk_results(symbol, portfolio)
+                logger.info(f"Direct risk results fetched for {symbol}")
+                
+                if 'error' not in risk_results:
+                    stock_details['risk_analysis'] = {
+                        'risk_level': risk_results.get('risk_level', 'N/A'),
+                        'volatility': risk_results.get('volatility', 'N/A'),
+                        'daily_return': risk_results.get('daily_return', 'N/A'),
+                        'current_price': risk_results.get('current_price', 'N/A'),
+                        'trend': risk_results.get('trend', 'N/A'),
+                        'latest_close': risk_results.get('latest_close', None)
+                    }
+                else:
+                    logger.warning(f"Risk analysis returned error for {symbol}: {risk_results['error']}")
+                    stock_details['risk_analysis'] = {
+                        'risk_level': 'N/A',
+                        'volatility': 'N/A',
+                        'daily_return': 'N/A',
+                        'current_price': 'N/A',
+                        'latest_close': None,
+                        'trend': 'N/A'
+                    }
+            except NameError:
+                # Fall back to internal API call if function not available directly
+                logger.info(f"Falling back to API call for risk analysis for {symbol}")
+                host_url = request.host_url.rstrip('/')
+                risk_url = f"{host_url}/risk/analyze/{symbol}"
+                logger.info(f"Making risk request to: {risk_url}")
+                
+                risk_response = requests.get(risk_url, timeout=10)
+                
+                if risk_response.ok:
+                    stock_details['risk_analysis'] = risk_response.json().get('risk_analysis')
+                    logger.info(f"Retrieved risk analysis via API for {symbol}")
+                else:
+                    logger.warning(f"Risk analysis API call failed with status code {risk_response.status_code}")
+                    stock_details['risk_analysis'] = {
+                        'risk_level': 'N/A',
+                        'volatility': 'N/A', 
+                        'daily_return': 'N/A',
+                        'current_price': 'N/A',
+                        'latest_close': None,
+                        'trend': 'N/A'
+                    }
         except Exception as e:
-            logging.error(f"Error fetching risk analysis: {e}")
+            logger.error(f"Error fetching risk analysis for {symbol}: {e}")
             stock_details['risk_analysis'] = {
                 'risk_level': 'N/A',
                 'volatility': 'N/A',
@@ -213,8 +304,10 @@ def get_stock_details(symbol):
             
         # Price Prediction
         try:
+            logger.info(f"Calculating price prediction for {symbol}")
             end_date = datetime.now()
             start_date = end_date - timedelta(days=365)
+            
             prediction_result = stock_price_predictor(symbol, start_date, end_date)
             
             if 'error' not in prediction_result:
@@ -225,23 +318,23 @@ def get_stock_details(symbol):
                     'prediction_confidence': prediction_result.get('prediction_confidence', 70),
                     'prediction_direction': prediction_result.get('prediction_direction')
                 }
+                logger.info(f"Generated price prediction for {symbol}")
             else:
-                logging.error(f"Price prediction error: {prediction_result['error']}")
+                logger.error(f"Price prediction error for {symbol}: {prediction_result['error']}")
                 stock_details['price_prediction'] = None
-
         except Exception as e:
-            logging.error(f"Error in price prediction: {e}")
+            logger.error(f"Error in price prediction for {symbol}: {e}")
             stock_details['price_prediction'] = None
 
         return stock_details
 
     except Exception as e:
-        logging.error(f"Comprehensive error fetching stock details: {e}")
-        # Instead of returning None, return a minimal stock details object
-        # This prevents 404 errors when the API calls fail
+        logger.exception(f"Comprehensive error fetching stock details for {symbol}: {e}")
+        # Return a minimal stock details object instead of None
+        # This prevents 404 errors when API calls fail
         return {
             'current_quote': {'price': 0.0, 'change': 0.0, 'change_percent': 0.0},
-            'profile': {'name': 'Unknown', 'symbol': symbol},
+            'profile': {'name': symbol, 'symbol': symbol},
             'historical_prices': [],
             'news': [],
             'error': f"Failed to retrieve complete stock data: {str(e)}"
@@ -253,21 +346,17 @@ def stock_details_route(symbol):
         return jsonify({"error": "Symbol is required"}), 400
 
     try:
+        logger.info(f"Stock details route called for {symbol}")
         details = get_stock_details(symbol)
         
-        # Check if there was an error but we still have some data
-        if details and 'error' in details:
-            return jsonify(details), 200  # Return partial data with error message
-        
-        # If get_stock_details returned None (should not happen with improved error handling)
-        if details is None:
-            return jsonify({"error": "Could not retrieve stock details"}), 500
-            
-        return jsonify(details)
-
+        # Always return a 200 status if we have any data at all
+        return jsonify(details), 200
     except Exception as e:
-        logging.error(f"Error in stock details route: {e}")
-        return jsonify({"error": "An unexpected error occurred"}), 500
+        logger.exception(f"Unhandled error in stock details route for {symbol}: {e}")
+        return jsonify({
+            "error": "An unexpected error occurred",
+            "details": str(e)
+        }), 500
         
 @risk_bp.route('/analyze/<symbol>', methods=['GET'])
 def analyze_stock_risk(symbol):
@@ -275,11 +364,14 @@ def analyze_stock_risk(symbol):
         if not symbol:
             return jsonify({"error": "Symbol is required"}), 400
         
+        logger.info(f"Risk analysis route called for {symbol}")
+        
         # Attempt to get risk analysis results
         results = fetch_risk_results(symbol, portfolio)
         
         # Check for error in results
         if 'error' in results:
+            logger.warning(f"Risk analysis error for {symbol}: {results['error']}")
             return jsonify({
                 "risk_analysis": {
                     "error": results['error'],
@@ -290,9 +382,10 @@ def analyze_stock_risk(symbol):
                     "trend": 'N/A',
                     "latest_close": None
                 }
-            }), 400
+            }), 200  # Still return 200 to prevent cascading errors
         
         # Return successful risk analysis
+        logger.info(f"Risk analysis successful for {symbol}")
         return jsonify({
             "risk_analysis": {
                 "risk_level": results.get('risk_level', 'N/A'),
@@ -305,10 +398,10 @@ def analyze_stock_risk(symbol):
         })
         
     except Exception as e:
-        logging.error(f"Comprehensive error analyzing risk for {symbol}: {str(e)}")
+        logger.exception(f"Unhandled error analyzing risk for {symbol}: {e}")
         return jsonify({
             "risk_analysis": {
-                "error": "Failed to analyze stock risk",
+                "error": f"Failed to analyze stock risk: {str(e)}",
                 "risk_level": 'N/A',
                 "volatility": 'N/A',
                 "daily_return": 'N/A',
@@ -316,4 +409,4 @@ def analyze_stock_risk(symbol):
                 "trend": 'N/A',
                 "latest_close": None
             }
-        }), 500
+        }), 200  # Still return 200 to prevent cascading errors
