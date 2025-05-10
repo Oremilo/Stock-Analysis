@@ -17,17 +17,17 @@ def create_app():
     app = Flask(__name__)
 
     # Enable CORS with explicit configuration
-    CORS(app, resources={r"/*": {"origins": "*", 
-                                "allow_headers": ["Content-Type", "Authorization"],
-                                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]}})
-
+    # CORS(app, resources={r"/*": {"origins": "*", 
+    #                             "allow_headers": ["Content-Type", "Authorization"],
+    #                             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]}})
+    CORS(app, supports_credentials=True)
     # Add CORS headers to all responses
-    @app.after_request
-    def after_request(response):
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
-        return response
+    # @app.after_request
+    # def after_request(response):
+    #     response.headers.add('Access-Control-Allow-Origin', '*')
+    #     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    #     response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+    #     return response
 
     # Configure app settings
     app.config.update(
