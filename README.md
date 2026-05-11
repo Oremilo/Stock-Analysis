@@ -49,7 +49,7 @@ Sophisticated risk analysis framework providing volatility metrics, return calcu
 ## Installation
 1. **Clone the Repository**:
    ```bash
-   https://github.com/Harshith20B/Stock_Analysis
+   [https://github.com/Harshith20B/Stock_Analysis](https://github.com/Oremilo/Stock-Analysis)
    ```
 2. **Navigate to the Project Directory**:
    ```bash
